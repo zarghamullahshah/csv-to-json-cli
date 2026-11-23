@@ -1,0 +1,1 @@
+{"bin":{"csv-to-json":"./src/cli.js"},"description":"Convert CSV to JSON from the command line or as a library. No dependencies.","engines":{"node":">=18"},"keywords":["csv","json","cli","converter"],"license":"MIT","name":"csv-to-json-cli","scripts":{"test":"node --test test/csv.test.js test/cli.test.js"},"version":"1.0.0"}
