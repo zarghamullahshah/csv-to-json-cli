@@ -28,6 +28,7 @@ Options:
   --no-coerce              Keep every value a string (no number/boolean conversion)
   --ndjson                 One JSON object per line instead of a JSON array
   --pretty                 Pretty-print the JSON array (default when output is a TTY)
+  --indent <n>             Indent width for --pretty (integer 0-10, default: 2)
   -h, --help               Show this help
 ```
 
@@ -42,7 +43,15 @@ csv-to-json --ndjson people.csv
 
 # Semicolon-separated file, values kept as strings
 csv-to-json -d ';' --no-coerce export.csv
+
+# Human-readable output, indented 2 spaces (default) or 4
+csv-to-json --pretty people.csv
+csv-to-json --pretty --indent 4 people.csv
 ```
+
+## Pretty output
+
+`--pretty` prints the JSON array indented instead of compact, for readable output or saving to a file. `--indent <n>` (0–10, default 2) sets the indent width and only takes effect together with `--pretty`; without it, output stays compact. When output is a terminal, pretty-printing is already the default.
 
 ## Library use
 

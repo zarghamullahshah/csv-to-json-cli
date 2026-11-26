@@ -14,11 +14,12 @@ Options:
   --no-coerce              Keep every value a string (no number/boolean conversion)
   --ndjson                 One JSON object per line instead of a JSON array
   --pretty                 Pretty-print the JSON array (default when output is a TTY)
+  --indent <n>             Indent width for --pretty (integer 0-10, default: 2)
   -h, --help               Show this help
 `;
 
 function parseArgs(argv) {
-  const opts = { delimiter: ',', coerce: true, ndjson: false, pretty: null, file: null };
+  const opts = { delimiter: ',', coerce: true, ndjson: false, pretty: null, indent: 2, file: null };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '-h' || arg === '--help') return { help: true };
@@ -35,6 +36,13 @@ function parseArgs(argv) {
       opts.ndjson = true;
     } else if (arg === '--pretty') {
       opts.pretty = true;
+    } else if (arg === '--indent') {
+      const value = argv[i + 1];
+      if (value === undefined || !/^\d+$/.test(value) || Number(value) > 10) {
+        throw new Error('--indent needs an integer between 0 and 10');
+      }
+      opts.indent = Number(value);
+      i += 1;
     } else if (arg.startsWith('-')) {
       throw new Error(`Unknown option: ${arg}`);
     } else if (opts.file === null) {
@@ -88,7 +96,7 @@ function main(argv) {
     return;
   }
   const pretty = opts.pretty ?? process.stdout.isTTY;
-  process.stdout.write(pretty ? `${JSON.stringify(rows, null, 2)}\n` : `${JSON.stringify(rows)}\n`);
+  process.stdout.write(pretty ? `${JSON.stringify(rows, null, opts.indent)}\n` : `${JSON.stringify(rows)}\n`);
 }
 
 if (require.main === module) main(process.argv.slice(2));

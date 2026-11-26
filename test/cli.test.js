@@ -58,3 +58,30 @@ test('cli: --help exits 0 and prints usage', () => {
   assert.equal(result.status, 0);
   assert.match(result.stdout, /Usage: csv-to-json/);
 });
+
+test('cli: --pretty produces valid indented JSON (2 spaces by default)', () => {
+  const result = runCli(['--pretty'], 'name,age\nAda,36\n');
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '[\n  {\n    "name": "Ada",\n    "age": 36\n  }\n]\n');
+  assert.deepEqual(JSON.parse(result.stdout), [{ name: 'Ada', age: 36 }]);
+});
+
+test('cli: --pretty --indent 4 produces 4-space indent', () => {
+  const result = runCli(['--pretty', '--indent', '4'], 'name,age\nAda,36\n');
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '[\n    {\n        "name": "Ada",\n        "age": 36\n    }\n]\n');
+  assert.deepEqual(JSON.parse(result.stdout), [{ name: 'Ada', age: 36 }]);
+});
+
+test('cli: --indent without --pretty leaves output compact', () => {
+  const result = runCli(['--indent', '4'], 'name,age\nAda,36\n');
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '[{"name":"Ada","age":36}]\n');
+});
+
+test('cli: --indent with a bad value exits 2 and shows usage', () => {
+  const result = runCli(['--indent', 'abc']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /--indent needs an integer between 0 and 10/);
+  assert.match(result.stderr, /Usage: csv-to-json/);
+});
