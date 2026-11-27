@@ -24,7 +24,8 @@ printf 'name,age\nAda,36\n' | node src/cli.js
 Usage: csv-to-json [options] [file]
 
 Options:
-  -d, --delimiter <char>   Field delimiter (default: ,)
+  -d, --delimiter <char|name>   Field delimiter: a single character, or one
+                                of comma, semicolon, tab, pipe (default: ,)
   --no-coerce              Keep every value a string (no number/boolean conversion)
   --ndjson                 One JSON object per line instead of a JSON array
   --pretty                 Pretty-print the JSON array (default when output is a TTY)
@@ -43,6 +44,11 @@ csv-to-json --ndjson people.csv
 
 # Semicolon-separated file, values kept as strings
 csv-to-json -d ';' --no-coerce export.csv
+
+# Named delimiters — handy for a tab, which is awkward to type literally
+csv-to-json --delimiter tab export.tsv
+csv-to-json -d semicolon export.csv
+# Also accepted: comma, pipe, a single character, or the escape \t
 
 # Human-readable output, indented 2 spaces (default) or 4
 csv-to-json --pretty people.csv

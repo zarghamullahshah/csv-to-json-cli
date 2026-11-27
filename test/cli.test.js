@@ -85,3 +85,46 @@ test('cli: --indent with a bad value exits 2 and shows usage', () => {
   assert.match(result.stderr, /--indent needs an integer between 0 and 10/);
   assert.match(result.stderr, /Usage: csv-to-json/);
 });
+
+test('cli: named delimiters comma, semicolon, tab and pipe', () => {
+  const tabbed = runCli(['--delimiter', 'tab'], 'a\tb\n1\t2\n');
+  assert.equal(tabbed.status, 0);
+  assert.equal(tabbed.stdout, '[{"a":1,"b":2}]\n');
+
+  const semi = runCli(['-d', 'semicolon'], 'a;b\n1;2\n');
+  assert.equal(semi.status, 0);
+  assert.equal(semi.stdout, '[{"a":1,"b":2}]\n');
+
+  const piped = runCli(['--delimiter', 'pipe'], 'a|b\n1|2\n');
+  assert.equal(piped.status, 0);
+  assert.equal(piped.stdout, '[{"a":1,"b":2}]\n');
+
+  const comma = runCli(['--delimiter', 'comma'], 'a,b\n1,2\n');
+  assert.equal(comma.status, 0);
+  assert.equal(comma.stdout, '[{"a":1,"b":2}]\n');
+});
+
+test('cli: --delimiter \\t escape means tab', () => {
+  const result = runCli(['--delimiter', '\\t'], 'a\tb\n1\t2\n');
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '[{"a":1,"b":2}]\n');
+});
+
+test('cli: a single-character delimiter still works', () => {
+  const result = runCli(['-d', ';'], 'a;b\n1;2\n');
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, '[{"a":1,"b":2}]\n');
+});
+
+test('cli: unknown delimiter name exits 2 and shows usage', () => {
+  const result = runCli(['--delimiter', 'colon']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /--delimiter needs exactly one character, or a name/);
+  assert.match(result.stderr, /Usage: csv-to-json/);
+});
+
+test('cli: missing --delimiter value exits 2', () => {
+  const result = runCli(['--delimiter']);
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /--delimiter needs a value/);
+});

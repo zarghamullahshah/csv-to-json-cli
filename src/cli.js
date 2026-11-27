@@ -10,7 +10,8 @@ Convert CSV to JSON. Reads from <file> or stdin when no file is given,
 writes a JSON array to stdout.
 
 Options:
-  -d, --delimiter <char>   Field delimiter (default: ,)
+  -d, --delimiter <char|name>   Field delimiter: a single character, or one
+                                of comma, semicolon, tab, pipe (default: ,)
   --no-coerce              Keep every value a string (no number/boolean conversion)
   --ndjson                 One JSON object per line instead of a JSON array
   --pretty                 Pretty-print the JSON array (default when output is a TTY)
@@ -18,17 +19,31 @@ Options:
   -h, --help               Show this help
 `;
 
+// Named delimiters, for characters that are awkward to type on the
+// command line (a literal tab in particular). Single characters keep
+// working as before, and the two-character escape "\t" also means tab.
+const NAMED_DELIMITERS = { comma: ',', semicolon: ';', tab: '\t', pipe: '|' };
+
+function resolveDelimiter(value) {
+  if (value === undefined) {
+    throw new Error('--delimiter needs a value (a character, or comma, semicolon, tab or pipe)');
+  }
+  if (value === '\\t' || NAMED_DELIMITERS[value] !== undefined) {
+    return value === '\\t' ? '\t' : NAMED_DELIMITERS[value];
+  }
+  if (value.length !== 1) {
+    throw new Error('--delimiter needs exactly one character, or a name: comma, semicolon, tab or pipe');
+  }
+  return value;
+}
+
 function parseArgs(argv) {
   const opts = { delimiter: ',', coerce: true, ndjson: false, pretty: null, indent: 2, file: null };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '-h' || arg === '--help') return { help: true };
     if (arg === '-d' || arg === '--delimiter') {
-      const value = argv[i + 1];
-      if (value === undefined || value.length !== 1) {
-        throw new Error('--delimiter needs exactly one character');
-      }
-      opts.delimiter = value;
+      opts.delimiter = resolveDelimiter(argv[i + 1]);
       i += 1;
     } else if (arg === '--no-coerce') {
       opts.coerce = false;
